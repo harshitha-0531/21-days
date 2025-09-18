@@ -1,0 +1,40 @@
+name: Fetch Kaggle Dataset
+
+on:
+  workflow_dispatch:   # run manually from Actions tab
+  schedule:
+    - cron: "0 0 * * 0"  # optional, runs every Sunday
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install Kaggle
+        run: pip install kaggle
+
+      - name: Add kaggle.json
+        run: |
+          mkdir -p ~/.kaggle
+          echo "${{ secrets.KAGGLE_JSON }}" > ~/.kaggle/kaggle.json
+          chmod 600 ~/.kaggle/kaggle.json
+
+      - name: Download Dataset
+        run: |
+          kaggle datasets download -d <username>/<dataset-name> -p data/ --unzip
+
+      - name: Commit & Push
+        run: |
+          git config --global user.email "your-email@example.com"
+          git config --global user.name "Your Name"
+          git add data/
+          git commit -m "Update Kaggle dataset"
+          git push
